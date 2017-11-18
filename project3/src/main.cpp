@@ -36,6 +36,17 @@ int main(int argc, char* argv[]) {
     
     //To learn the naive Bayesian classifier,
     //you should do all the following steps only for the training set.
+    int countImagesforEachDigit [] = {0,0,0,0,0,0,0,0,0,0};
+    
+    for (int i  = 0; i < trainLabels.size(); i++){
+        countImagesforEachDigit[static_cast<int>(testLabels[i])]++;
+    }
+//    for (int i = 0; i < 10; i++){
+//        std::cout << i << "  " << countImagesforEachDigit[i] << std::endl;
+//    }
+    
+    
+    
     
     
     
