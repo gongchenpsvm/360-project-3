@@ -1,5 +1,5 @@
 proj3: main.o bitmap.o
-	g++ -o proj3 main.o bitmap.o
+	g++ -std=c++11 -o proj3 main.o bitmap.o
 main.o: main.cpp
 	g++ -std=c++11 -c main.cpp
 bitmap.o: bitmap.cpp
