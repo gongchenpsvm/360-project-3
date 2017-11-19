@@ -36,17 +36,12 @@ int main(int argc, char* argv[]) {
     std::vector<std::vector<unsigned char>> testImages = dataset.test_images;
     // get test labels
     std::vector<unsigned char> testLabels = dataset.test_labels;
-    
     //To learn the naive Bayesian classifier,
     //you should do all the following steps only for the training set.
     int countImagesforEachDigit [] = {0,0,0,0,0,0,0,0,0,0};
     for (int i  = 0; i < trainLabels.size(); i++){
         countImagesforEachDigit[static_cast<int>(trainLabels[i])]++;
     }
-//        for (int i = 0; i < 10; i++){
-//            std::cout << i << "  " << countImagesforEachDigit[i] << std::endl;
-//        }
-        //50980 + 1135 + 1032 + 1010 + 982 + 892 + 958 + 1028 + 974 + 1009
     double plClassPixel2DArray [10][784];
     //Initialize the 2d array to count white pixels
     for (int i = 0; i < 10; i++){
@@ -81,22 +76,6 @@ int main(int argc, char* argv[]) {
             = countImagesOfDigitCWherePixelFjIsWhite * 1.0 / countOfDigitC;
         }
     }
-//    //Step 2 Calcualte P(Fj = 0|C = c), which is ( 1-PL(Fj = 1|C = c) )
-//    double plClassPixel2DArrayFjIs0 [10][784];
-//    //Initialize the 2d array
-//    for (int i = 0; i < 10; i++){
-//        for (int j = 0; j < 784; j++){
-//            plClassPixel2DArrayFjIs0 [i][j] = 1 - plClassPixel2DArray[i][j];
-//        }
-//    }
-//    Test try to print the probability image that pixel is white for class = 3
-//    for (int f=0; f<numFeatures; f++) {
-//        double pixelDoubleValue = static_cast<double>(plClassPixel2DArray[0][f]);
-//        if (f % width == 0) {
-//            std::cout<<std::endl;
-//        }
-//        std::cout<<pixelDoubleValue<<" ";
-//    }
     //Output 10 bitmaps
     for (int c = 0; c < numLabels; c++) {
         std::vector<unsigned char> classFs(numFeatures);
@@ -160,7 +139,7 @@ int main(int argc, char* argv[]) {
         }
         classificationMatrix[currImageAns][currImageEval]++;
     }
-    //Now output
+    //Now output classification-summary.txt
     std::ofstream classificationFile;
     classificationFile.open("../output/classification-summary.txt");
     int correctCount = 0;
@@ -175,43 +154,5 @@ int main(int argc, char* argv[]) {
     }
     classificationFile << (correctCount * 1.0 / 10000) * 100 << "%";
     classificationFile.close();
-//    //print out one of the training images
-//    for (int f=0; f<numFeatures; f++) {
-//        // get value of pixel f (0 or 1) from training image trainImageToPrint
-//        int pixelIntValue = static_cast<int>(trainImages[trainImageToPrint][f]);
-//        if (f % width == 0) {
-//            std::cout<<std::endl;
-//        }
-//        std::cout<<pixelIntValue<<" ";
-//    }
-//    std::cout<<std::endl;
-//    // print the associated label (correct digit) for training image trainImageToPrint
-//    std::cout<<"Label: "<<static_cast<int>(trainLabels[trainImageToPrint])<<std::endl;
-//    //print out one of the test images
-//    for (int f=0; f<numFeatures; f++) {
-//        // get value of pixel f (0 or 1) from training image trainImageToPrint
-//        int pixelIntValue = static_cast<int>(testImages[testImageToPrint][f]);
-//        if (f % width == 0) {
-//            std::cout<<std::endl;
-//        }
-//        std::cout<<pixelIntValue<<" ";
-//    }
-//    std::cout<<std::endl;
-//    // print the associated label (correct digit) for test image testImageToPrint
-//    std::cout<<"Label: "<<static_cast<int>(testLabels[testImageToPrint])<<std::endl;
-//    std::vector<unsigned char> trainI(numFeatures);
-//    std::vector<unsigned char> testI(numFeatures);
-//    for (int f=0; f<numFeatures; f++) {
-//        int trainV = 255*(static_cast<int>(trainImages[trainImageToPrint][f]));
-//        int testV = 255*(static_cast<int>(testImages[testImageToPrint][f]));
-//        trainI[f] = static_cast<unsigned char>(trainV);
-//        testI[f] = static_cast<unsigned char>(testV);
-//    }
-//    std::stringstream ssTrain;
-//    std::stringstream ssTest;
-//    ssTrain << "../output/train" <<trainImageToPrint<<"Label"<<static_cast<int>(trainLabels[trainImageToPrint])<<".bmp";
-//    ssTest << "../output/test" <<testImageToPrint<<"Label"<<static_cast<int>(testLabels[testImageToPrint])<<".bmp";
-//    Bitmap::writeBitmap(trainI, 28, 28, ssTrain.str(), false);
-//    Bitmap::writeBitmap(testI, 28, 28, ssTest.str(), false);
     return 0;
 }
