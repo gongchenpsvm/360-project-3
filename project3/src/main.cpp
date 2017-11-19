@@ -127,8 +127,6 @@ int main(int argc, char* argv[]) {
     }
     myfile.close();
     //Output classification-summary.txt
-    std::ofstream classificationFile;
-    myfile.open("../output/classification-summary.txt");
     int classificationMatrix [10][10];
     //Initialize the matrix
     for (int i = 0; i < 10; i++){
@@ -162,17 +160,21 @@ int main(int argc, char* argv[]) {
         }
         classificationMatrix[currImageAns][currImageEval]++;
     }
+    //Now output
+    std::ofstream classificationFile;
+    classificationFile.open("../output/classification-summary.txt");
     int correctCount = 0;
     for (int i = 0; i < 10; i++){
         for (int j = 0; j < 10; j++){
-            std::cout <<classificationMatrix[i][j] << " ";
+            classificationFile <<classificationMatrix[i][j] << " ";
             if (i == j){
                 correctCount += classificationMatrix[i][j];
             }
         }
-        std::cout << std::endl;
+        classificationFile << std::endl;
     }
-    //classificationFile << (correctCount * 1.0 / 10000) * 100 << "%";
+    classificationFile << (correctCount * 1.0 / 10000) * 100 << "%";
+    classificationFile.close();
 //    //print out one of the training images
 //    for (int f=0; f<numFeatures; f++) {
 //        // get value of pixel f (0 or 1) from training image trainImageToPrint
