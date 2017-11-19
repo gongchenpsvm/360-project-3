@@ -40,27 +40,48 @@ int main(int argc, char* argv[]) {
     for (int i  = 0; i < trainLabels.size(); i++){
         countImagesforEachDigit[static_cast<int>(testLabels[i])]++;
     }
-    int plClassPixel2DArray [10][783];
+//        for (int i = 0; i < 10; i++){
+//            std::cout << i << "  " << countImagesforEachDigit[i] << std::endl;
+//        }
+        //50980 + 1135 + 1032 + 1010 + 982 + 892 + 958 + 1028 + 974 + 1009
+    double plClassPixel2DArray [10][783];
     //Initialize the 2d array
     for (int i = 0; i < 10; i++){
         for (int j = 0; j < 783; j++){
             plClassPixel2DArray [i][j] = 0;
         }
     }
-    //Fill the 2d array
-    //Step 0. Iterate over the images
+    //Fill the 2d array by the count of white pixels of each class
+    //Step 0 Iterate over the images and count the number of white pixels
     //Not range based for loop cuz order matters
-    for (std::vector<std::vector<unsigned char>>::size_type i = 0; i != trainImages.size(); i++) {
-        
+    for (int imageIndex = 0; imageIndex < 600000; imageIndex++){
+        int digitClass = static_cast<int>(trainLabels[imageIndex]);
+        std::vector<unsigned char> currImage = trainImages[imageIndex];
+        for (int pixelIndex = 0; pixelIndex < 783; pixelIndex++){
+            int pixelIndexValue = static_cast<int>(currImage[pixelIndex]);
+            if (pixelIndexValue == 1){
+                plClassPixel2DArray[digitClass][pixelIndex]++;
+            }
+        }
     }
-    
-    
-    
-    
-    
-    
-    
-    
+    //Step 1 Calculate the probability PL(Fj = 1|C = c)
+    for (int classIndex = 0; classIndex < 10; classIndex++){
+        int countOfDigitC = countImagesforEachDigit[classIndex] + 2;//Denominator
+        for (int pixelIndex = 0; pixelIndex < 783; pixelIndex++){
+            //Nominator
+            int countImagesOfDigitCWherePixelFjIsWhite = plClassPixel2DArray[classIndex][pixelIndex] + 1;
+            plClassPixel2DArray[classIndex][pixelIndex]
+            = countImagesOfDigitCWherePixelFjIsWhite * 1.0 / countOfDigitC;//PL(Fj = 1|C = c)
+        }
+    }
+    //Step 2 Calcualte P(Fj = 0|C = c)
+    double plClassPixel2DArrayFjIs0 [10][783];
+    //Initialize the 2d array
+    for (int i = 0; i < 10; i++){
+        for (int j = 0; j < 783; j++){
+            plClassPixel2DArrayFjIs0 [i][j] = 1 - plClassPixel2DArray[i][j];
+        }
+    }
     
     
 //    //print out one of the training images
