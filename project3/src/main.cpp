@@ -6,6 +6,7 @@
 #include "bitmap.hpp"
 #include <sstream>
 #include <math.h>
+#include <limits>
 #define MNIST_DATA_DIR "../mnist_data"
 
 int main(int argc, char* argv[]) {
@@ -80,14 +81,14 @@ int main(int argc, char* argv[]) {
             = countImagesOfDigitCWherePixelFjIsWhite * 1.0 / countOfDigitC;
         }
     }
-    //Step 2 Calcualte P(Fj = 0|C = c), which is ( 1-PL(Fj = 1|C = c) )
-    double plClassPixel2DArrayFjIs0 [10][784];
-    //Initialize the 2d array
-    for (int i = 0; i < 10; i++){
-        for (int j = 0; j < 784; j++){
-            plClassPixel2DArrayFjIs0 [i][j] = 1 - plClassPixel2DArray[i][j];
-        }
-    }
+//    //Step 2 Calcualte P(Fj = 0|C = c), which is ( 1-PL(Fj = 1|C = c) )
+//    double plClassPixel2DArrayFjIs0 [10][784];
+//    //Initialize the 2d array
+//    for (int i = 0; i < 10; i++){
+//        for (int j = 0; j < 784; j++){
+//            plClassPixel2DArrayFjIs0 [i][j] = 1 - plClassPixel2DArray[i][j];
+//        }
+//    }
 //    Test try to print the probability image that pixel is white for class = 3
 //    for (int f=0; f<numFeatures; f++) {
 //        double pixelDoubleValue = static_cast<double>(plClassPixel2DArray[0][f]);
@@ -96,6 +97,7 @@ int main(int argc, char* argv[]) {
 //        }
 //        std::cout<<pixelDoubleValue<<" ";
 //    }
+    //Output 10 bitmaps
     for (int c = 0; c < numLabels; c++) {
         std::vector<unsigned char> classFs(numFeatures);
         for (int f=0; f<numFeatures; f++) {
@@ -125,31 +127,34 @@ int main(int argc, char* argv[]) {
     }
     myfile.close();
     //Output classification-summary.txt
+    std::ofstream classificationFile;
+    myfile.open("../output/classification-summary.txt");
     int classificationMatrix [10][10];
+    //Initialize the matrix
     for (int i = 0; i < 10; i++){
         for (int j = 0; j < 10; j++){
             classificationMatrix[i][j] = 0;
         }
     }
     //Iterate over the testing set
-    for (int imageIndex = 0; imageIndex < 100; imageIndex++){
+    for (int imageIndex = 0; imageIndex < 10000; imageIndex++){
         int currImageAns = static_cast<int>(testLabels[imageIndex]);
         int currImageEval = -1;
-        int probSumMax = 0;
+        double probSumMax = std::numeric_limits<double>::lowest();;
         //Iterate over 0-9. Find the label with highest probability
         for (int label = 0; label < 10; label++){
-            int probSum = 0;
+            double probSum = 0;
             //Iterate over the image pixels
             for (int pixelIndex = 0; pixelIndex < 784; pixelIndex++){
-                int pixelVal = static_cast<int>(testImages[imageIndex][pixelIndex]);
-                if (pixelVal == 1){
+                int pixelIntValue = static_cast<int>(testImages[imageIndex][pixelIndex]);
+                if (pixelIntValue == 1){
                     probSum += log2(plClassPixel2DArray[label][pixelIndex]);
                 }
-                else if (pixelVal == 0){
+                else if (pixelIntValue == 0){
                     probSum += log2(1 - plClassPixel2DArray[label][pixelIndex]);
                 }
             }
-            probSum += countImagesforEachDigit[label] * 1.0 / 60000;
+            probSum += log2( countImagesforEachDigit[label] * 1.0 / 60000 ) ;
             if (probSum > probSumMax){
                 probSumMax = probSum;
                 currImageEval = label;
@@ -157,12 +162,17 @@ int main(int argc, char* argv[]) {
         }
         classificationMatrix[currImageAns][currImageEval]++;
     }
+    int correctCount = 0;
     for (int i = 0; i < 10; i++){
         for (int j = 0; j < 10; j++){
             std::cout <<classificationMatrix[i][j] << " ";
+            if (i == j){
+                correctCount += classificationMatrix[i][j];
+            }
         }
         std::cout << std::endl;
     }
+    //classificationFile << (correctCount * 1.0 / 10000) * 100 << "%";
 //    //print out one of the training images
 //    for (int f=0; f<numFeatures; f++) {
 //        // get value of pixel f (0 or 1) from training image trainImageToPrint
