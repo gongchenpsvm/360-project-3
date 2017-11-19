@@ -5,7 +5,9 @@
 #include "mnist_utils.hpp"
 #include "bitmap.hpp"
 #include <sstream>
+#include <math.h>
 #define MNIST_DATA_DIR "../mnist_data"
+
 int main(int argc, char* argv[]) {
     //Read in the data set from the files
     mnist::MNIST_dataset<std::vector, std::vector<uint8_t>, uint8_t> dataset =
@@ -38,7 +40,7 @@ int main(int argc, char* argv[]) {
     //you should do all the following steps only for the training set.
     int countImagesforEachDigit [] = {0,0,0,0,0,0,0,0,0,0};
     for (int i  = 0; i < trainLabels.size(); i++){
-        countImagesforEachDigit[static_cast<int>(testLabels[i])]++;
+        countImagesforEachDigit[static_cast<int>(trainLabels[i])]++;
     }
 //        for (int i = 0; i < 10; i++){
 //            std::cout << i << "  " << countImagesforEachDigit[i] << std::endl;
@@ -106,8 +108,61 @@ int main(int argc, char* argv[]) {
         ss << "../output/digit" <<c<<".bmp";
         Bitmap::writeBitmap(classFs, 28, 28, ss.str(), false);
     }
-    
-    //Output
+    //Output network.txt
+    std::ofstream myfile;
+    myfile.open("../output/network.txt");
+    //The first 784 lines should be P(Fj = 1|C = 0)
+    for(int i = 0; i < 784; i++){
+        myfile << plClassPixel2DArray[0][i] << std::endl;
+    }
+    //The next 784 lines should be P(Fj = 1|C = 1)
+    for(int i = 0; i < 784; i++){
+        myfile << plClassPixel2DArray[1][i] << std::endl;
+    }
+    //prior probabilities for each class c ∈ {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+    for (int i = 0; i < 10; i++){
+        myfile << countImagesforEachDigit[i] * 1.0 / 60000 << std::endl;
+    }
+    myfile.close();
+    //Output classification-summary.txt
+    int classificationMatrix [10][10];
+    for (int i = 0; i < 10; i++){
+        for (int j = 0; j < 10; j++){
+            classificationMatrix[i][j] = 0;
+        }
+    }
+    //Iterate over the testing set
+    for (int imageIndex = 0; imageIndex < 100; imageIndex++){
+        int currImageAns = static_cast<int>(testLabels[imageIndex]);
+        int currImageEval = -1;
+        int probSumMax = 0;
+        //Iterate over 0-9. Find the label with highest probability
+        for (int label = 0; label < 10; label++){
+            int probSum = 0;
+            //Iterate over the image pixels
+            for (int pixelIndex = 0; pixelIndex < 784; pixelIndex++){
+                int pixelVal = static_cast<int>(testImages[imageIndex][pixelIndex]);
+                if (pixelVal == 1){
+                    probSum += log2(plClassPixel2DArray[label][pixelIndex]);
+                }
+                else if (pixelVal == 0){
+                    probSum += log2(1 - plClassPixel2DArray[label][pixelIndex]);
+                }
+            }
+            probSum += countImagesforEachDigit[label] * 1.0 / 60000;
+            if (probSum > probSumMax){
+                probSumMax = probSum;
+                currImageEval = label;
+            }
+        }
+        classificationMatrix[currImageAns][currImageEval]++;
+    }
+    for (int i = 0; i < 10; i++){
+        for (int j = 0; j < 10; j++){
+            std::cout <<classificationMatrix[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
 //    //print out one of the training images
 //    for (int f=0; f<numFeatures; f++) {
 //        // get value of pixel f (0 or 1) from training image trainImageToPrint
@@ -148,4 +203,3 @@ int main(int argc, char* argv[]) {
 //    Bitmap::writeBitmap(testI, 28, 28, ssTest.str(), false);
     return 0;
 }
-
