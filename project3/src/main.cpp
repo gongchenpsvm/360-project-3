@@ -65,15 +65,19 @@ int main(int argc, char* argv[]) {
             }
         }
     }
+    double actualProb2DArray [10][784];
     //Step 1 Calculate the probability PL(Fj = 1|C = c)
     for (int classIndex = 0; classIndex < 10; classIndex++){
-        int countOfDigitC = countImagesforEachDigit[classIndex] + 2;//Denominator
+        int countOfDigitC = countImagesforEachDigit[classIndex];
+        //+ 2;//Denominator
         for (int pixelIndex = 0; pixelIndex < 784; pixelIndex++){
             //Nominator
-            int countImagesOfDigitCWherePixelFjIsWhite = plClassPixel2DArray[classIndex][pixelIndex] + 1;
+            int countImagesOfDigitCWherePixelFjIsWhite = plClassPixel2DArray[classIndex][pixelIndex];
+            //+ 1;
             //Fill the 2d array with PL(Fj = 1|C = c) instead
             plClassPixel2DArray[classIndex][pixelIndex]
-            = countImagesOfDigitCWherePixelFjIsWhite * 1.0 / countOfDigitC;
+            = (countImagesOfDigitCWherePixelFjIsWhite+1) * 1.0 / (countOfDigitC + 2);
+            actualProb2DArray[classIndex][pixelIndex] = countImagesOfDigitCWherePixelFjIsWhite * 1.0 / countOfDigitC;
         }
     }
     //Output 10 bitmaps
@@ -92,14 +96,19 @@ int main(int argc, char* argv[]) {
     //Output network.txt
     std::ofstream myfile;
     myfile.open("../output/network.txt");
-    //The first 784 lines should be P(Fj = 1|C = 0)
-    for(int i = 0; i < 784; i++){
-        myfile << plClassPixel2DArray[0][i] << std::endl;
+    for (int classIndex = 0; classIndex < 10; classIndex++){
+        for(int i = 0; i < 784; i++){
+            myfile << actualProb2DArray[classIndex][i] << std::endl;
+        }
     }
-    //The next 784 lines should be P(Fj = 1|C = 1)
-    for(int i = 0; i < 784; i++){
-        myfile << plClassPixel2DArray[1][i] << std::endl;
-    }
+//    //The first 784 lines should be P(Fj = 1|C = 0)
+//    for(int i = 0; i < 784; i++){
+//        myfile << actualProb2DArray[0][i] << std::endl;
+//    }
+//    //The next 784 lines should be P(Fj = 1|C = 1)
+//    for(int i = 0; i < 784; i++){
+//        myfile << actualProb2DArray[1][i] << std::endl;
+//    }
     //prior probabilities for each class c ∈ {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
     for (int i = 0; i < 10; i++){
         myfile << countImagesforEachDigit[i] * 1.0 / 60000 << std::endl;
